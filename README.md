@@ -1,4 +1,8 @@
 # Setup & run instructions
+## Fill environment variables
+1. ```mv .env.example .env```
+2. ```nano .env```
+3. Replace the changeme for the API key
 ## Create virtual environment
 1. ```python3 -m venv env```
 
