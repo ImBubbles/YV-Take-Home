@@ -90,12 +90,12 @@ def yv_is_eligible_version(version: int) -> bool:
         _update_valid_versions()
     return version in _VALID_VERSIONS
 
-_VOTD_CACHE = []
+_VOTD_CACHE = {}
 def yv_get_votd(day: int, version: int) -> dict:
     global _VOTD_CACHE
     if day in _VOTD_CACHE:
         return _VOTD_CACHE[day]
-    result = yv_get_passages(version, yv_context.yv_get_votd_reference(day))
+    result = yv_get_passages(version, yv_get_votd_reference(day))
     result["day"] = day
     _VOTD_CACHE[day] = result
     return result
