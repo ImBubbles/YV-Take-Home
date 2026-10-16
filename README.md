@@ -21,6 +21,12 @@ Available at [https://yv.haydenholmes.dev](https://yv.haydenholmes.dev)
 2. ```fastapi dev src/main.py``` (local) or ```fastapi run src/main.py``` (network)
 3. ```deactivate```
 
+### Tests
+With the virtual environment active, run:
+```bash
+python -m pytest
+```
+
 ## Option B (Docker):
 ### Compose
 ```sudo docker compose -f compose.yaml up --build -d```
