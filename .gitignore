@@ -1,0 +1,15 @@
+# Virtual environment
+env/
+
+# Environment
+.env
+
+# Candidate
+candidate/
+
+# Python cache files
+__pycache__/
+*.py[cod]
+
+# Idea
+.idea/
