@@ -99,10 +99,8 @@ def yv_is_eligible_version(version: int) -> bool:
 
 _VOTD_CACHE = {}
 def yv_get_votd(day: int, version: int) -> dict:
-    global _VOTD_CACHE
-    cache_key = (day, version)
-    if cache_key in _VOTD_CACHE:
-        return _VOTD_CACHE[cache_key]
+    if day in _VOTD_CACHE and version in _VOTD_CACHE[day]:
+        return _VOTD_CACHE[day][version]
     passage = yv_get_votd_reference(day)
     passage_data = yv_get_passages(version, passage)
     try:
@@ -114,5 +112,5 @@ def yv_get_votd(day: int, version: int) -> dict:
         }
     except (KeyError, TypeError):
         raise _upstream_error("YouVersion returned an unexpected response")
-    _VOTD_CACHE[cache_key] = result
+    _VOTD_CACHE.setdefault(day, {})[version] = result
     return result

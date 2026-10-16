@@ -83,6 +83,7 @@ def test_votd_cache_is_keyed_by_day_and_version(monkeypatch):
         first = yv_context.yv_get_votd(100, 12)
         repeated = yv_context.yv_get_votd(100, 12)
         other_version = yv_context.yv_get_votd(100, 206)
+        cached_votd = {day: dict(versions) for day, versions in yv_context._VOTD_CACHE.items()}
     finally:
         yv_context._VOTD_CACHE.clear()
 
@@ -90,6 +91,8 @@ def test_votd_cache_is_keyed_by_day_and_version(monkeypatch):
     assert first["version_id"] == 12
     assert other_version["version_id"] == 206
     assert passage_calls == [(12, "JHN.3.16"), (206, "JHN.3.16")]
+    assert set(cached_votd) == {100}
+    assert set(cached_votd[100]) == {12, 206}
 
 
 def test_english_versions_returns_only_english_records(monkeypatch):
