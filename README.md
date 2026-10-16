@@ -1,23 +1,16 @@
 # Setup & run instructions
 ## Create virtual environment
-1. ```bash
-python3 -m venv env```
+1. ```python3 -m venv env```
 
 ## Install dependencies
-1. ```bash
-source env/bin/activate```
-2. ```bash
-pip install -r requirements.txt```
-3. ```bash
-deactivate```
+1. ```source env/bin/activate```
+2. ```pip install -r requirements.txt```
+3. ```deactivate```
 
 ## Run
-1. ```bash
-source env/bin/activate```
-2. ```bash
-fastapi dev src/main.py```
-3. ```bash
-deactivate```
+1. ```source env/bin/activate```
+2. ```fastapi dev src/main.py```
+3. ```deactivate```
 
 # Decisions & Assumptions
 * Deciding to do api backend as that is what I'm more interested in, though I'm used to usually doing full-stack for my personal projects
