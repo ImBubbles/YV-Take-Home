@@ -9,7 +9,7 @@
 
 ## Run
 1. ```source env/bin/activate```
-2. ```fastapi dev src/main.py```
+2. ```fastapi dev src/main.py``` (local) or ```fastapi run src/main.py``` (network)
 3. ```deactivate```
 
 # Decisions & Assumptions
