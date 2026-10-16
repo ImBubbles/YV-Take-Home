@@ -90,3 +90,31 @@ def test_votd_cache_is_keyed_by_day_and_version(monkeypatch):
     assert first["version_id"] == 12
     assert other_version["version_id"] == 206
     assert passage_calls == [(12, "JHN.3.16"), (206, "JHN.3.16")]
+
+
+def test_english_versions_returns_only_english_records(monkeypatch):
+    monkeypatch.setattr(yv_context, "_get_valid_versions", lambda: {
+        12: {
+            "id": 12,
+            "language_tag": "en",
+            "abbreviation": "ASV",
+            "title": "American Standard Version",
+        },
+        206: {
+            "id": 206,
+            "language_tag": "en-US",
+            "abbreviation": "WEB",
+            "title": "World English Bible",
+        },
+        999: {
+            "id": 999,
+            "language_tag": "fr",
+            "abbreviation": "LSG",
+            "title": "Louis Segond",
+        },
+    })
+
+    assert yv_context.yv_get_english_versions() == [
+        {"id": 12, "abbreviation": "ASV", "title": "American Standard Version"},
+        {"id": 206, "abbreviation": "WEB", "title": "World English Bible"},
+    ]

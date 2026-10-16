@@ -46,3 +46,7 @@ def get_votd(day: int | None = None, version: int = 12):
       content={"error": {"code": "INVALID_VERSION", "message": "version is not available"}}
     )
   return yv_context.yv_get_votd(day_number, version)
+
+@app.get("/versions")
+def get_versions():
+  return yv_context.yv_get_english_versions()
