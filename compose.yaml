@@ -1,0 +1,9 @@
+services:
+  api:
+    image: yv-take-home
+    container_name: yv-take-home
+    build: .
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env

@@ -1,20 +1,30 @@
 # Setup & run instructions
 ## Fill environment variables
-1. ```mv .env.example .env```
+1. ```cp .env.example .env```
 2. ```nano .env```
 3. Replace the changeme for the API key
-## Create virtual environment
+
+## Option A (venv):
+### Create virtual environment
 1. ```python3 -m venv env```
 
-## Install dependencies
+### Install dependencies
 1. ```source env/bin/activate```
 2. ```pip install -r requirements.txt```
 3. ```deactivate```
 
-## Run
+### Run
 1. ```source env/bin/activate```
 2. ```fastapi dev src/main.py``` (local) or ```fastapi run src/main.py``` (network)
 3. ```deactivate```
+
+## Option B (Docker):
+### Compose
+```sudo docker compose -f compose.yaml up --build -d```
+## Restart
+```sudo docker restart yv-take-home```
+### Remove
+```sudo docker rm -f yv-take-home```
 
 # Decisions & Assumptions
 * Deciding to do api backend as that is what I'm more interested in, though I'm used to usually doing full-stack for my personal projects
