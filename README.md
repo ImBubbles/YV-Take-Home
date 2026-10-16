@@ -1,3 +1,6 @@
+# Live version
+Available at [https://yv.haydenholmes.dev](https://yv.haydenholmes.dev)
+
 # Setup & run instructions
 ## Fill environment variables
 1. ```cp .env.example .env```
