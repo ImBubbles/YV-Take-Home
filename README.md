@@ -21,7 +21,7 @@
 ## Option B (Docker):
 ### Compose
 ```sudo docker compose -f compose.yaml up --build -d```
-## Restart
+### Restart
 ```sudo docker restart yv-take-home```
 ### Remove
 ```sudo docker rm -f yv-take-home```
