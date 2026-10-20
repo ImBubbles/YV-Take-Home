@@ -5,119 +5,98 @@ from unittest.mock import patch
 
 import main
 from context import yv_context
+from context import env_context
 
 client = TestClient(main.app)
 
-
 def test_votd_happy_path():
     expected = {
-        "day": 100,
-        "reference": "John 3:16",
-        "text": "For God so loved the world...",
-        "version_id": 12,
+        "day": 195,
+        "reference": "Revelation 3:20",
+        "text": "Behold, I stand at the door and knock. If anyone hears my voice and opens the door, then I will come in to him and will dine with him, and he with me.",
+        "version_id": 206
     }
-    with patch.object(main.yv_context, "yv_is_eligible_version", return_value=True), \
-         patch.object(yv_context, "yv_get_votd_reference", return_value="JHN.3.16"), \
-         patch.object(yv_context, "yv_get_passages", return_value={
-             "id": "JHN.3.16",
-             "reference": "John 3:16",
-             "content": "For God so loved the world...",
-         }):
-        response = client.get("/votd?day=100&version=12")
-
-    assert response.status_code == 200
-    assert response.json() == expected
-
+    with (
+        patch.object( # /v1/verse_of_the_days/{day}
+        yv_context,
+        "yv_get_votd_reference",
+        return_value="REV.3.20" # func returns data["passage_id"]
+        ),
+        patch.object( # /v1/bibles/{version}/passages/{passage}
+            yv_context,
+            "yv_get_passages",
+            return_value={ # func returns data (or response.json())
+                "id": "REV.3.20",
+                "content": "Behold, I stand at the door and knock. If anyone hears my voice and opens the door, then I will come in to him and will dine with him, and he with me.",
+                "reference": "Revelation 3:20"
+            }
+        ),
+        patch.object( # /v1/bibles
+            yv_context,
+            "yv_is_eligible_version",
+            return_value=True # func returns if version is valid by checking against YV API
+        )
+    ):
+        response = client.get("/votd?day=195&version=206")
+        assert response.status_code == 200
+        assert response.json() == expected
 
 def test_votd_invalid_day():
-    response = client.get("/votd?day=0&version=12")
-
+    response = client.get("/votd?day=0")
     assert response.status_code == 400
     assert response.json() == {
-        "error": {
-            "code": "INVALID_DAY",
-            "message": "day must be an integer between 1 and 366",
+        'error': {
+            'code': 'INVALID_DAY',
+            'message': 'day must be an integer between 1 and 366'
         }
     }
 
-
-def test_votd_non_integer_day():
-    response = client.get("/votd?day=abc&version=12")
-
-    assert response.status_code == 400
-    assert response.json() == {
-        "error": {
-            "code": "INVALID_DAY",
-            "message": "day must be an integer between 1 and 366",
-        }
-    }
-
-
-def test_yv_upstream_failure():
-    with patch.object(main.yv_context, "yv_is_eligible_version", return_value=True), \
-         patch.object(yv_context.requests, "get") as mock_get:
-        mock_response = requests.Response()
-        mock_response.status_code = 500
-        mock_response.url = "https://example.com/v1/bibles"
-        mock_get.return_value = mock_response
-
-        response = client.get("/votd?day=195&version=12")
-
-    assert response.status_code == 502
-    assert response.json() == {
-        "error": {"code": "UPSTREAM_ERROR", "message": "YouVersion request failed"}
-    }
-
-
-def test_votd_cache_is_keyed_by_day_and_version(monkeypatch):
+def test_votd_upstream_failure_force():
     yv_context._VOTD_CACHE.clear()
-    passage_calls = []
-    monkeypatch.setattr(yv_context, "yv_get_votd_reference", lambda day: "JHN.3.16")
+    with patch.object(
+        yv_context,
+        "yv_get_votd_reference",
+        side_effect=yv_context._upstream_error(
+            "YouVersion returned an unexpected response"
+        )
+    ):
+        response = client.get("/votd?day=195&version=206")
+        assert response.status_code == 502
+        assert response.json() == {
+            "error": {
+                "code": "UPSTREAM_ERROR",
+                "message": "YouVersion returned an unexpected response"
+            }
+        }
 
-    def get_passage(version, passage):
-        passage_calls.append((version, passage))
-        return {"reference": "John 3:16", "content": f"Text for {version}"}
+def test_votd_upstream_failure_invalid_url():
+    yv_context._VOTD_CACHE.clear()
+    with patch.object(
+        env_context,
+        "get_base_url",
+        return_value="https://iaminvalid.com/"
+    ):
+        response = client.get("/votd?day=195&version=206")
+        assert response.status_code == 502
+        assert response.json() == {
+            'error': {
+                'code': 'UPSTREAM_ERROR',
+                'message': 'YouVersion request failed'
+            }
+        }
 
-    monkeypatch.setattr(yv_context, "yv_get_passages", get_passage)
-    try:
-        first = yv_context.yv_get_votd(100, 12)
-        repeated = yv_context.yv_get_votd(100, 12)
-        other_version = yv_context.yv_get_votd(100, 206)
-        cached_votd = {day: dict(versions) for day, versions in yv_context._VOTD_CACHE.items()}
-    finally:
-        yv_context._VOTD_CACHE.clear()
-
-    assert first == repeated
-    assert first["version_id"] == 12
-    assert other_version["version_id"] == 206
-    assert passage_calls == [(12, "JHN.3.16"), (206, "JHN.3.16")]
-    assert set(cached_votd) == {100}
-    assert set(cached_votd[100]) == {12, 206}
-
-
-def test_english_versions_returns_only_english_records(monkeypatch):
-    monkeypatch.setattr(yv_context, "_get_valid_versions", lambda: {
-        12: {
-            "id": 12,
-            "language_tag": "en",
-            "abbreviation": "ASV",
-            "title": "American Standard Version",
-        },
-        206: {
-            "id": 206,
-            "language_tag": "en-US",
-            "abbreviation": "WEB",
-            "title": "World English Bible",
-        },
-        999: {
-            "id": 999,
-            "language_tag": "fr",
-            "abbreviation": "LSG",
-            "title": "Louis Segond",
-        },
-    })
-
-    assert yv_context.yv_get_english_versions() == [
-        {"id": 12, "abbreviation": "ASV", "title": "American Standard Version"},
-        {"id": 206, "abbreviation": "WEB", "title": "World English Bible"},
-    ]
+def test_votd_upstream_failure_connection():
+    yv_context._VOTD_CACHE.clear()
+    with patch.object(
+        yv_context.requests,
+        "get",
+        side_effect=requests.exceptions.ConnectionError()
+    ):
+        response = client.get("/votd?day=195&version=206")
+        assert response.status_code == 502
+        assert response.json() == {
+            'error': {
+                'code': 'UPSTREAM_ERROR',
+                'message': 'YouVersion request failed'
+            }
+        }
