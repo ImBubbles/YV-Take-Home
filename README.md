@@ -26,6 +26,10 @@ With the virtual environment active, run:
 ```bash
 python -m pytest
 ```
+or
+```bash
+pytest tests/{file}
+```
 
 ## Option B (Docker):
 ### Compose
@@ -43,3 +47,4 @@ python -m pytest
 
 # What I'd do next
 * Have the caching of valid versions be more robust
+* Have version verification be more efficient
