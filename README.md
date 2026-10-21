@@ -47,6 +47,6 @@ pytest tests/{file}
 
 # What I'd do next
 * Have version verification be more efficient
-* Fix possible bug of versions only being in english by having default language be None
+* Fix possible bug of versions only being in english by having default language changed to be None
 * Put version verification onto YouVersion as getting all versions paginates allow weird unintended invalidating valid versions
 * Replace current version caching for only english versions, as paginating makes caching all versions unreasonable
